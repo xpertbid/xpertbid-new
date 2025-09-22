@@ -22,7 +22,8 @@ class AuthController extends Controller
             return redirect()->route('admin.dashboard');
         }
         
-        return view('admin.auth.login');
+        // Redirect to the creative login page
+        return redirect()->route('login');
     }
 
     /**
@@ -175,7 +176,7 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
         
-        return redirect()->route('admin.login')
+        return redirect()->route('login')
             ->with('success', 'You have been successfully logged out.');
     }
 

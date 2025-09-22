@@ -20,6 +20,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'redirect.to.frontend' => \App\Http\Middleware\RedirectToFrontend::class,
         ]);
+        
+        // Override the default auth middleware
+        $middleware->web(replace: [
+            \Illuminate\Auth\Middleware\Authenticate::class => \App\Http\Middleware\Authenticate::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

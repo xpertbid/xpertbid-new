@@ -17,6 +17,19 @@ Route::post('/register', [App\Http\Controllers\AuthController::class, 'register'
 
 Route::post('/logout', [App\Http\Controllers\AuthController::class, 'logout'])->name('logout');
 
+// Frontend KYC Routes (Protected)
+Route::middleware(['auth'])->group(function () {
+    Route::get('/kyc', [App\Http\Controllers\KycController::class, 'index'])->name('kyc.index');
+    Route::get('/kyc/create', [App\Http\Controllers\KycController::class, 'create'])->name('kyc.create');
+    Route::post('/kyc', [App\Http\Controllers\KycController::class, 'store'])->name('kyc.store');
+    Route::get('/kyc/{kycDocument}', [App\Http\Controllers\KycController::class, 'show'])->name('kyc.show');
+    Route::get('/kyc/{kycDocument}/edit', [App\Http\Controllers\KycController::class, 'edit'])->name('kyc.edit');
+    Route::put('/kyc/{kycDocument}', [App\Http\Controllers\KycController::class, 'update'])->name('kyc.update');
+    Route::post('/kyc/{kycDocument}/upload-document', [App\Http\Controllers\KycController::class, 'uploadDocument'])->name('kyc.upload-document');
+    Route::delete('/kyc/{kycDocument}/remove-document', [App\Http\Controllers\KycController::class, 'removeDocument'])->name('kyc.remove-document');
+    Route::get('/api/kyc-types', [App\Http\Controllers\KycController::class, 'getKycTypes'])->name('kyc.types');
+});
+
 // Admin Authentication Routes
 Route::prefix('admin')->group(function () {
     // Login Routes
@@ -43,11 +56,30 @@ Route::prefix('admin')->group(function () {
 Route::middleware(['auth'])->group(function () {
     Route::get('/admin', function () {
         // Use cached dashboard stats
-        $stats = \App\Services\CacheService::cacheDashboardStats();
-        $recentActivities = \App\Services\CacheService::cacheRecentActivities(10);
+        $cacheService = new \App\Services\CacheService();
+        $stats = $cacheService->cacheDashboardStats();
+        $recentActivities = $cacheService->cacheRecentActivities(10);
         
         return view('admin.dashboard', compact('stats', 'recentActivities'));
-    });
+    })->name('admin.dashboard');
+    
+    // KYC Management Routes
+    Route::resource('admin/kyc', App\Http\Controllers\Admin\KycController::class)->names([
+        'index' => 'admin.kyc.index',
+        'create' => 'admin.kyc.create',
+        'store' => 'admin.kyc.store',
+        'show' => 'admin.kyc.show',
+        'edit' => 'admin.kyc.edit',
+        'update' => 'admin.kyc.update',
+        'destroy' => 'admin.kyc.destroy'
+    ]);
+    Route::post('/admin/kyc/{kycDocument}/approve', [App\Http\Controllers\Admin\KycController::class, 'approve'])->name('admin.kyc.approve');
+    Route::post('/admin/kyc/{kycDocument}/reject', [App\Http\Controllers\Admin\KycController::class, 'reject'])->name('admin.kyc.reject');
+    Route::post('/admin/kyc/{kycDocument}/under-review', [App\Http\Controllers\Admin\KycController::class, 'underReview'])->name('admin.kyc.under-review');
+    Route::post('/admin/kyc/{kycDocument}/upload-document', [App\Http\Controllers\Admin\KycController::class, 'uploadDocument'])->name('admin.kyc.upload-document');
+    Route::delete('/admin/kyc/{kycDocument}/remove-document', [App\Http\Controllers\Admin\KycController::class, 'removeDocument'])->name('admin.kyc.remove-document');
+    Route::get('/admin/kyc-stats', [App\Http\Controllers\Admin\KycController::class, 'getStats'])->name('admin.kyc.stats');
+});
 
 Route::get('/admin/tenants', function () {
     $tenants = DB::table('tenants')->get();
@@ -689,6 +721,7 @@ Route::resource('admin/blog-categories', App\Http\Controllers\Admin\BlogCategory
 Route::resource('admin/roles', App\Http\Controllers\Admin\RoleController::class);
 Route::get('/admin/permissions', [App\Http\Controllers\Admin\RoleController::class, 'permissions'])->name('admin.permissions');
 
+
 // Payment Gateway Routes
 Route::get('/admin/payments', [App\Http\Controllers\Admin\PaymentController::class, 'index'])->name('admin.payments.index');
 Route::get('/admin/payments/{gateway}/configure', [App\Http\Controllers\Admin\PaymentController::class, 'configure'])->name('admin.payments.configure');
@@ -717,4 +750,3 @@ Route::get('/admin/cache/stats', [App\Http\Controllers\Admin\CacheController::cl
 Route::get('/admin/cache/redis-info', [App\Http\Controllers\Admin\CacheController::class, 'redisInfo'])->name('admin.cache.redis-info');
 Route::get('/admin/cache/keys', [App\Http\Controllers\Admin\CacheController::class, 'getKeys'])->name('admin.cache.keys');
 Route::post('/admin/cache/delete-key', [App\Http\Controllers\Admin\CacheController::class, 'deleteKey'])->name('admin.cache.delete-key');
-});

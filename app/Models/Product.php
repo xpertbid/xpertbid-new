@@ -12,51 +12,6 @@ class Product extends Model implements HasMedia
 {
     use InteractsWithMedia;
 
-    /**
-     * Register media collections
-     */
-    public function registerMediaCollections(): void
-    {
-        $this->addMediaCollection('thumbnail')
-            ->singleFile()
-            ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp']);
-
-        $this->addMediaCollection('gallery')
-            ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp']);
-
-        $this->addMediaCollection('videos')
-            ->acceptsMimeTypes(['video/mp4', 'video/avi', 'video/mov']);
-
-        $this->addMediaCollection('documents')
-            ->acceptsMimeTypes(['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']);
-
-        $this->addMediaCollection('digital_files')
-            ->acceptsMimeTypes(['application/pdf', 'application/zip', 'application/x-rar-compressed']);
-    }
-
-    /**
-     * Register media conversions
-     */
-    public function registerMediaConversions(Media $media = null): void
-    {
-        $this->addMediaConversion('thumb')
-            ->width(150)
-            ->height(150)
-            ->sharpen(10)
-            ->nonQueued();
-
-        $this->addMediaConversion('medium')
-            ->width(400)
-            ->height(400)
-            ->sharpen(10)
-            ->nonQueued();
-
-        $this->addMediaConversion('large')
-            ->width(800)
-            ->height(800)
-            ->sharpen(10)
-            ->nonQueued();
-    }
 
     protected $fillable = [
         'tenant_id',

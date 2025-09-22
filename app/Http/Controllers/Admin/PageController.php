@@ -13,7 +13,7 @@ class PageController extends Controller
      */
     public function index()
     {
-        $pages = Page::with(['author', 'updater'])
+        $pages = Page::with(['author'])
                     ->orderBy('created_at', 'desc')
                     ->paginate(15);
         

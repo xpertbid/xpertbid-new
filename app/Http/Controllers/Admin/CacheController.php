@@ -173,6 +173,13 @@ class CacheController extends Controller
     public function redisInfo()
     {
         try {
+            if (!Redis::connection()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Redis is not available. Using ' . config('cache.default') . ' cache driver.'
+                ], 503);
+            }
+            
             $redis = Redis::connection();
             $info = $redis->info();
             
@@ -208,6 +215,13 @@ class CacheController extends Controller
         $pattern = $request->get('pattern', '*');
         
         try {
+            if (!Redis::connection()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Redis is not available. Cache keys cannot be retrieved.'
+                ], 503);
+            }
+            
             $keys = Redis::keys($pattern);
             
             // Get key info (TTL, type, size)
@@ -251,6 +265,13 @@ class CacheController extends Controller
         }
 
         try {
+            if (!Redis::connection()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Redis is not available. Cannot delete cache key.'
+                ], 503);
+            }
+            
             Redis::del($key);
             
             return response()->json([
@@ -271,6 +292,15 @@ class CacheController extends Controller
     private function getModuleCacheStats($module)
     {
         try {
+            if (!Redis::connection()) {
+                return [
+                    'total_keys' => 'N/A',
+                    'active_keys' => 'N/A',
+                    'expired_keys' => 'N/A',
+                    'total_size' => 'N/A',
+                ];
+            }
+            
             $pattern = $module . ':*';
             $keys = Redis::keys($pattern);
             

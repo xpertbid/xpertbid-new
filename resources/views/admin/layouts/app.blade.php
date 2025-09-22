@@ -404,6 +404,20 @@
             color: var(--primary-color);
         }
 
+        .dropdown-item button {
+            background: none;
+            border: none;
+            width: 100%;
+            text-align: left;
+            padding: 0;
+            color: inherit;
+        }
+
+        .dropdown-item button:hover {
+            background: none;
+            color: inherit;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .sidebar {
@@ -575,6 +589,12 @@
                 <span class="sidebar-text">Users</span>
             </a>
             
+            <!-- KYC Management -->
+            <a class="nav-link {{ request()->is('admin/kyc*') ? 'active' : '' }}" href="/admin/kyc">
+                <i class="fas fa-id-card"></i>
+                <span class="sidebar-text">KYC Management</span>
+            </a>
+            
             <!-- Pages -->
             <a class="nav-link {{ request()->is('admin/pages*') ? 'active' : '' }}" href="/admin/pages">
                 <i class="fas fa-file-alt"></i>
@@ -669,13 +689,10 @@
             
             <!-- Logout Button -->
             <div class="mt-auto p-3">
-                <form action="{{ route('admin.logout') }}" method="POST" class="d-inline">
-                    @csrf
-                    <button type="submit" class="btn btn-outline-danger w-100" onclick="return confirm('Are you sure you want to logout?')">
-                        <i class="fas fa-sign-out-alt me-2"></i>
-                        <span class="sidebar-text">Logout</span>
-                    </button>
-                </form>
+                <button type="button" class="btn btn-outline-danger w-100" onclick="confirmLogout()">
+                    <i class="fas fa-sign-out-alt me-2"></i>
+                    <span class="sidebar-text">Logout</span>
+                </button>
             </div>
         </nav>
     </div>
@@ -724,7 +741,11 @@
                             <li><a class="dropdown-item" href="#"><i class="fas fa-user me-2"></i>Profile</a></li>
                             <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i>Settings</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="#"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                            <li>
+                                <button type="button" class="dropdown-item" onclick="confirmLogout()">
+                                    <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                </button>
+                            </li>
                         </ul>
                     </div>
                 </div>
@@ -814,6 +835,41 @@
                         }
                     }
                 }
+
+        // SweetAlert Logout Confirmation
+        window.confirmLogout = function() {
+            Swal.fire({
+                title: 'Are you sure you want to logout?',
+                text: "You will be redirected to the login page.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, logout!',
+                cancelButtonText: 'Cancel',
+                customClass: {
+                    popup: 'swal2-popup-custom',
+                    confirmButton: 'swal2-confirm-custom',
+                    cancelButton: 'swal2-cancel-custom'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Create and submit logout form
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '{{ route("admin.logout") }}';
+                    
+                    const csrfToken = document.createElement('input');
+                    csrfToken.type = 'hidden';
+                    csrfToken.name = '_token';
+                    csrfToken.value = '{{ csrf_token() }}';
+                    
+                    form.appendChild(csrfToken);
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
+        };
         });
     </script>
     

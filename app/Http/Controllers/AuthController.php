@@ -35,7 +35,7 @@ class AuthController extends Controller
             $request->session()->regenerate();
             
             // Redirect to admin dashboard if user is admin
-            if (Auth::user()->role === 'admin') {
+            if (Auth::user()->isAdmin()) {
                 return redirect()->intended('/admin');
             }
             
@@ -72,8 +72,8 @@ class AuthController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role' => 'user', // Default role
-            'is_active' => true,
+            'status' => 'active',
+            'role' => 'user',
         ]);
 
         Auth::login($user);

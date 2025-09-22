@@ -34,6 +34,7 @@ class User extends Authenticatable
         'phone',
         'avatar',
         'status',
+        'role',
         'email_verified_at',
         'last_login_at',
         'profile_data',
@@ -312,7 +313,7 @@ class User extends Authenticatable
      */
     public function isAdmin($tenantId = null): bool
     {
-        return $this->hasAnyRole(['admin', 'admin_team_member'], $tenantId);
+        return $this->role === 'admin';
     }
 
     /**

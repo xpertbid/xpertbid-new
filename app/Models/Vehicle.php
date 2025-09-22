@@ -122,6 +122,22 @@ class Vehicle extends Model implements HasMedia
     }
 
     /**
+     * Get the category for the vehicle.
+     */
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
+    }
+
+    /**
+     * Get the brand for the vehicle.
+     */
+    public function brand()
+    {
+        return $this->belongsTo(Brand::class);
+    }
+
+    /**
      * Get the specifications for the vehicle.
      */
     public function specifications()

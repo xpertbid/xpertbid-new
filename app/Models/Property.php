@@ -117,6 +117,14 @@ class Property extends Model implements HasMedia
     }
 
     /**
+     * Get the category for the property.
+     */
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
+    }
+
+    /**
      * Get the features for the property.
      */
     public function features()

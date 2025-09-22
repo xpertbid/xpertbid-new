@@ -49,4 +49,20 @@ class Auction extends Model implements HasMedia
             ->sharpen(10)
             ->nonQueued();
     }
+
+    /**
+     * Get the category for the auction.
+     */
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
+    }
+
+    /**
+     * Get the bids for the auction.
+     */
+    public function bids()
+    {
+        return $this->hasMany(Bid::class);
+    }
 }
