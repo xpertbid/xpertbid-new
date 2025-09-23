@@ -8,6 +8,11 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+// Test route for admin login
+Route::get('/test-admin', function () {
+    return view('admin.auth.login');
+});
+
 // General Authentication Routes
 Route::get('/login', [App\Http\Controllers\AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [App\Http\Controllers\AuthController::class, 'login'])->name('login.post');
@@ -27,7 +32,6 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/kyc/{kycDocument}', [App\Http\Controllers\KycController::class, 'update'])->name('kyc.update');
     Route::post('/kyc/{kycDocument}/upload-document', [App\Http\Controllers\KycController::class, 'uploadDocument'])->name('kyc.upload-document');
     Route::delete('/kyc/{kycDocument}/remove-document', [App\Http\Controllers\KycController::class, 'removeDocument'])->name('kyc.remove-document');
-    Route::get('/api/kyc-types', [App\Http\Controllers\KycController::class, 'getKycTypes'])->name('kyc.types');
 });
 
 // Admin Authentication Routes

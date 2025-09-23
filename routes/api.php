@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\DB;
 
 // Health check endpoint
 Route::get('/health', function () {
@@ -11,6 +12,115 @@ Route::get('/health', function () {
         'service' => 'XpertBid API',
         'version' => '1.0.0'
     ]);
+});
+
+// Public API routes for frontend
+Route::get('/products', function () {
+    try {
+        $products = DB::table('products')
+            ->leftJoin('vendors', 'products.vendor_id', '=', 'vendors.id')
+            ->leftJoin('categories', 'products.category_id', '=', 'categories.id')
+            ->select('products.*', 'vendors.business_name', 'categories.name as category_name')
+            ->where('products.status', 'publish')
+            ->get();
+        
+        return response()->json([
+            'success' => true,
+            'data' => $products
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Error fetching products: ' . $e->getMessage()
+        ], 500);
+    }
+});
+
+Route::get('/products/featured', function () {
+    try {
+        $products = DB::table('products')
+            ->leftJoin('vendors', 'products.vendor_id', '=', 'vendors.id')
+            ->leftJoin('categories', 'products.category_id', '=', 'categories.id')
+            ->select('products.*', 'vendors.business_name', 'categories.name as category_name')
+            ->where('products.status', 'publish')
+            ->where('products.is_featured', true)
+            ->limit(8)
+            ->get();
+        
+        return response()->json([
+            'success' => true,
+            'data' => $products
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Error fetching featured products: ' . $e->getMessage()
+        ], 500);
+    }
+});
+
+Route::get('/categories', function () {
+    try {
+        $categories = DB::table('categories')
+            ->get();
+        
+        return response()->json([
+            'success' => true,
+            'data' => $categories
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Error fetching categories: ' . $e->getMessage()
+        ], 500);
+    }
+});
+
+Route::get('/kyc-types', function () {
+    try {
+        $kycTypes = [
+            'user' => [
+                'name' => 'E-commerce User',
+                'description' => 'For users who want to buy products',
+                'required_fields' => ['full_name', 'email', 'phone_number'],
+                'optional_fields' => ['address', 'city', 'state', 'country', 'postal_code']
+            ],
+            'vendor' => [
+                'name' => 'Vendor/Business',
+                'description' => 'For businesses who want to sell products',
+                'required_fields' => ['full_name', 'email', 'phone_number', 'business_name', 'ntn_number', 'business_address'],
+                'optional_fields' => ['address', 'city', 'state', 'country', 'postal_code', 'business_type', 'tax_number', 'business_registration_number']
+            ],
+            'property' => [
+                'name' => 'Property Seller',
+                'description' => 'For users who want to list properties',
+                'required_fields' => ['full_name', 'email', 'phone_number', 'business_name', 'ntn_number'],
+                'optional_fields' => ['address', 'city', 'state', 'country', 'postal_code', 'business_type', 'tax_number']
+            ],
+            'vehicle' => [
+                'name' => 'Vehicle Seller',
+                'description' => 'For users who want to sell vehicles',
+                'required_fields' => ['full_name', 'email', 'phone_number', 'business_name', 'ntn_number'],
+                'optional_fields' => ['address', 'city', 'state', 'country', 'postal_code', 'business_type', 'tax_number']
+            ],
+            'auction' => [
+                'name' => 'Auction Participant',
+                'description' => 'For users who want to participate in auctions',
+                'required_fields' => ['full_name', 'email', 'phone_number'],
+                'optional_fields' => ['address', 'city', 'state', 'country', 'postal_code', 'business_name', 'business_type']
+            ]
+        ];
+        
+        return response()->json([
+            'success' => true,
+            'data' => $kycTypes
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Error fetching KYC types: ' . $e->getMessage()
+        ], 500);
+    }
 });
 use App\Http\Controllers\Api\TenantController;
 use App\Http\Controllers\Api\UserController;

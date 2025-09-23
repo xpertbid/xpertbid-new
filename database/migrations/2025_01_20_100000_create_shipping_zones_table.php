@@ -25,7 +25,7 @@ return new class extends Migration
             $table->integer('sort_order')->default(0);
             $table->timestamps();
 
-            $table->foreign('tenant_id')->references('id')->on('tenants')->onDelete('cascade');
+            // Foreign key will be added later after tenants table is created
             $table->index(['tenant_id', 'is_active']);
         });
     }
