@@ -2,10 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 class BrandSeeder extends Seeder
 {
@@ -14,129 +12,193 @@ class BrandSeeder extends Seeder
      */
     public function run(): void
     {
+        $this->command->info('Creating brands...');
+
         $brands = [
             [
                 'name' => 'Apple',
                 'slug' => 'apple',
-                'description' => 'Apple Inc. is an American multinational technology company.',
-                'logo' => 'https://via.placeholder.com/150x150/000000/FFFFFF?text=Apple',
-                'website_url' => 'https://www.apple.com',
-                'status' => true,
-                'seo_title' => 'Apple Products - Premium Technology',
-                'seo_description' => 'Discover Apple\'s innovative products including iPhone, iPad, Mac, and more.',
-                'created_at' => now(),
-                'updated_at' => now(),
+                'description' => 'Innovative technology company known for premium products',
+                'logo' => '/images/brands/apple.jpg',
+                'website_url' => 'https://apple.com',
+                'status' => 1,
             ],
             [
                 'name' => 'Samsung',
                 'slug' => 'samsung',
-                'description' => 'Samsung is a South Korean multinational conglomerate.',
-                'logo' => 'https://via.placeholder.com/150x150/1428A0/FFFFFF?text=Samsung',
-                'website_url' => 'https://www.samsung.com',
-                'status' => true,
-                'seo_title' => 'Samsung Electronics - Innovation for Everyone',
-                'seo_description' => 'Explore Samsung\'s wide range of electronics and home appliances.',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'Sony',
-                'slug' => 'sony',
-                'description' => 'Sony Corporation is a Japanese multinational conglomerate.',
-                'logo' => 'https://via.placeholder.com/150x150/000000/FFFFFF?text=Sony',
-                'website_url' => 'https://www.sony.com',
-                'status' => true,
-                'seo_title' => 'Sony - Be Moved',
-                'seo_description' => 'Experience Sony\'s premium electronics, gaming, and entertainment products.',
-                'created_at' => now(),
-                'updated_at' => now(),
+                'description' => 'Leading electronics manufacturer and smartphone innovator',
+                'logo' => '/images/brands/samsung.jpg',
+                'website_url' => 'https://samsung.com',
+                'status' => 1,
             ],
             [
                 'name' => 'Nike',
                 'slug' => 'nike',
-                'description' => 'Nike, Inc. is an American multinational corporation.',
-                'logo' => 'https://via.placeholder.com/150x150/000000/FFFFFF?text=Nike',
-                'website_url' => 'https://www.nike.com',
-                'status' => true,
-                'seo_title' => 'Nike - Just Do It',
-                'seo_description' => 'Shop Nike\'s athletic shoes, clothing, and sports equipment.',
-                'created_at' => now(),
-                'updated_at' => now(),
+                'description' => 'Just Do It - Leading athletic wear and sports equipment',
+                'logo' => '/images/brands/nike.jpg',
+                'website_url' => 'https://nike.com',
+                'status' => 1,
             ],
             [
                 'name' => 'Adidas',
                 'slug' => 'adidas',
-                'description' => 'Adidas AG is a German multinational corporation.',
-                'logo' => 'https://via.placeholder.com/150x150/000000/FFFFFF?text=Adidas',
-                'website_url' => 'https://www.adidas.com',
-                'status' => true,
-                'seo_title' => 'Adidas - Impossible is Nothing',
-                'seo_description' => 'Discover Adidas\' sports and lifestyle products.',
-                'created_at' => now(),
-                'updated_at' => now(),
+                'description' => 'Impossible is Nothing - Sports and lifestyle brand',
+                'logo' => '/images/brands/adidas.jpg',
+                'website_url' => 'https://adidas.com',
+                'status' => 1,
             ],
             [
-                'name' => 'Microsoft',
-                'slug' => 'microsoft',
-                'description' => 'Microsoft Corporation is an American multinational technology corporation.',
-                'logo' => 'https://via.placeholder.com/150x150/00BCF2/FFFFFF?text=Microsoft',
-                'website_url' => 'https://www.microsoft.com',
-                'status' => true,
-                'seo_title' => 'Microsoft - Empowering Every Person',
-                'seo_description' => 'Explore Microsoft\'s software, hardware, and cloud services.',
-                'created_at' => now(),
-                'updated_at' => now(),
+                'name' => 'Sony',
+                'slug' => 'sony',
+                'description' => 'Electronics, gaming, and entertainment technology',
+                'logo' => '/images/brands/sony.jpg',
+                'website_url' => 'https://sony.com',
+                'status' => 1,
             ],
             [
-                'name' => 'Google',
-                'slug' => 'google',
-                'description' => 'Google LLC is an American multinational technology company.',
-                'logo' => 'https://via.placeholder.com/150x150/4285F4/FFFFFF?text=Google',
-                'website_url' => 'https://www.google.com',
-                'status' => true,
-                'seo_title' => 'Google - Organize the World\'s Information',
-                'seo_description' => 'Discover Google\'s products and services.',
-                'created_at' => now(),
-                'updated_at' => now(),
+                'name' => 'LG',
+                'slug' => 'lg',
+                'description' => 'Consumer electronics and home appliances',
+                'logo' => '/images/brands/lg.jpg',
+                'website_url' => 'https://lg.com',
+                'status' => 1,
             ],
             [
-                'name' => 'Tesla',
-                'slug' => 'tesla',
-                'description' => 'Tesla, Inc. is an American electric vehicle and clean energy company.',
-                'logo' => 'https://via.placeholder.com/150x150/CC0000/FFFFFF?text=Tesla',
-                'website_url' => 'https://www.tesla.com',
-                'status' => true,
-                'seo_title' => 'Tesla - Accelerating the World\'s Transition',
-                'seo_description' => 'Explore Tesla\'s electric vehicles and energy products.',
-                'created_at' => now(),
-                'updated_at' => now(),
+                'name' => 'Dell',
+                'slug' => 'dell',
+                'description' => 'Computer technology and IT solutions',
+                'logo' => '/images/brands/dell.jpg',
+                'website_url' => 'https://dell.com',
+                'status' => 1,
+            ],
+            [
+                'name' => 'HP',
+                'slug' => 'hp',
+                'description' => 'Personal computing and printing solutions',
+                'logo' => '/images/brands/hp.jpg',
+                'website_url' => 'https://hp.com',
+                'status' => 1,
+            ],
+            [
+                'name' => 'Canon',
+                'slug' => 'canon',
+                'description' => 'Digital imaging and camera technology',
+                'logo' => '/images/brands/canon.jpg',
+                'website_url' => 'https://canon.com',
+                'status' => 1,
+            ],
+            [
+                'name' => 'Nintendo',
+                'slug' => 'nintendo',
+                'description' => 'Gaming consoles and entertainment software',
+                'logo' => '/images/brands/nintendo.jpg',
+                'website_url' => 'https://nintendo.com',
+                'status' => 1,
+            ],
+            [
+                'name' => 'Xbox',
+                'slug' => 'xbox',
+                'description' => 'Microsoft gaming platform and accessories',
+                'logo' => '/images/brands/xbox.jpg',
+                'website_url' => 'https://xbox.com',
+                'status' => 1,
+            ],
+            [
+                'name' => 'PlayStation',
+                'slug' => 'playstation',
+                'description' => 'Sony gaming console and entertainment platform',
+                'logo' => '/images/brands/playstation.jpg',
+                'website_url' => 'https://playstation.com',
+                'status' => 1,
+            ],
+            [
+                'name' => 'IKEA',
+                'slug' => 'ikea',
+                'description' => 'Affordable home furniture and accessories',
+                'logo' => '/images/brands/ikea.jpg',
+                'website_url' => 'https://ikea.com',
+                'status' => 1,
+            ],
+            [
+                'name' => 'Zara',
+                'slug' => 'zara',
+                'description' => 'Fast fashion clothing and accessories',
+                'logo' => '/images/brands/zara.jpg',
+                'website_url' => 'https://zara.com',
+                'status' => 1,
+            ],
+            [
+                'name' => 'H&M',
+                'slug' => 'hm',
+                'description' => 'Fashion and lifestyle brand for the whole family',
+                'logo' => '/images/brands/hm.jpg',
+                'website_url' => 'https://hm.com',
+                'status' => 1,
+            ],
+            [
+                'name' => 'Toyota',
+                'slug' => 'toyota',
+                'description' => 'Reliable automotive manufacturer',
+                'logo' => '/images/brands/toyota.jpg',
+                'website_url' => 'https://toyota.com',
+                'status' => 1,
+            ],
+            [
+                'name' => 'Honda',
+                'slug' => 'honda',
+                'description' => 'Automotive and motorcycle manufacturer',
+                'logo' => '/images/brands/honda.jpg',
+                'website_url' => 'https://honda.com',
+                'status' => 1,
             ],
             [
                 'name' => 'BMW',
                 'slug' => 'bmw',
-                'description' => 'Bayerische Motoren Werke AG is a German multinational corporation.',
-                'logo' => 'https://via.placeholder.com/150x150/0066CC/FFFFFF?text=BMW',
-                'website_url' => 'https://www.bmw.com',
-                'status' => true,
-                'seo_title' => 'BMW - The Ultimate Driving Machine',
-                'seo_description' => 'Discover BMW\'s luxury vehicles and motorcycles.',
-                'created_at' => now(),
-                'updated_at' => now(),
+                'description' => 'Luxury automotive and motorcycle manufacturer',
+                'logo' => '/images/brands/bmw.jpg',
+                'website_url' => 'https://bmw.com',
+                'status' => 1,
             ],
             [
                 'name' => 'Mercedes-Benz',
                 'slug' => 'mercedes-benz',
-                'description' => 'Mercedes-Benz is a German luxury automotive brand.',
-                'logo' => 'https://via.placeholder.com/150x150/000000/FFFFFF?text=Mercedes',
-                'website_url' => 'https://www.mercedes-benz.com',
-                'status' => true,
-                'seo_title' => 'Mercedes-Benz - The Best or Nothing',
-                'seo_description' => 'Experience Mercedes-Benz luxury vehicles.',
-                'created_at' => now(),
-                'updated_at' => now(),
+                'description' => 'Luxury automotive manufacturer',
+                'logo' => '/images/brands/mercedes.jpg',
+                'website_url' => 'https://mercedes-benz.com',
+                'status' => 1,
+            ],
+            [
+                'name' => 'Tesla',
+                'slug' => 'tesla',
+                'description' => 'Electric vehicles and clean energy solutions',
+                'logo' => '/images/brands/tesla.jpg',
+                'website_url' => 'https://tesla.com',
+                'status' => 1,
             ],
         ];
 
-        DB::table('brands')->insert($brands);
+        foreach ($brands as $brandData) {
+            // Check if brand already exists
+            $existingBrand = DB::table('brands')->where('slug', $brandData['slug'])->first();
+            if ($existingBrand) {
+                $this->command->info("Brand {$brandData['name']} already exists, skipping...");
+                continue;
+            }
+
+            DB::table('brands')->insert([
+                'name' => $brandData['name'],
+                'slug' => $brandData['slug'],
+                'description' => $brandData['description'],
+                'logo' => $brandData['logo'],
+                'website_url' => $brandData['website_url'],
+                'status' => $brandData['status'],
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            $this->command->info("Created brand: {$brandData['name']}");
+        }
+
+        $this->command->info('Brand seeding completed!');
     }
 }

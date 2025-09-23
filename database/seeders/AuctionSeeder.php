@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -13,214 +12,154 @@ class AuctionSeeder extends Seeder
      */
     public function run(): void
     {
+        $this->command->info('Creating auctions...');
+
+        // Get existing data
+        $tenant = DB::table('tenants')->first();
+        $vendors = DB::table('vendors')->get();
+        $categories = DB::table('categories')->get();
+        $products = DB::table('products')->get();
+
+        if (!$tenant || $vendors->isEmpty() || $categories->isEmpty() || $products->isEmpty()) {
+            $this->command->error('Required data not found. Please run other seeders first.');
+            return;
+        }
+
         $auctions = [
             [
-                'tenant_id' => 1,
-                'vendor_id' => 1, // TechGear Solutions
-                'product_id' => 1, // iPhone 15 Pro Max
-                'title' => 'iPhone 15 Pro Max 256GB - Limited Edition',
-                'description' => 'Brand new iPhone 15 Pro Max in Titanium finish. This is a limited edition model with exclusive packaging.',
-                'type' => 'english',
-                'starting_price' => 1000.00,
-                'reserve_price' => 1200.00,
-                'buy_now_price' => 1500.00,
-                'current_bid' => 1100.00,
-                'bid_increment' => 25.00,
-                'bid_count' => 8,
+                'title' => 'Vintage Rolex Submariner 1960s',
+                'description' => 'Rare vintage Rolex Submariner from 1960s in excellent condition. Original dial, hands, and movement. Comes with original box and papers.',
+                'starting_price' => 15000.00,
+                'current_price' => 18500.00,
+                'reserve_price' => 20000.00,
+                'increment' => 250.00,
+                'status' => 'active',
                 'start_time' => now()->subDays(2),
-                'end_time' => now()->addDays(1),
-                'status' => 'active',
-                'is_featured' => true,
-                'auto_extend' => true,
-                'extend_minutes' => 5,
-                'images' => json_encode([
-                    'https://via.placeholder.com/800x600/2c3e50/ffffff?text=iPhone+15+Pro+Max+Auction',
-                    'https://via.placeholder.com/800x600/3498db/ffffff?text=iPhone+15+Pro+Max+Box'
-                ]),
-                'terms_conditions' => json_encode([
-                    'Payment within 48 hours',
-                    'Shipping included in final price',
-                    'No returns on auction items',
-                    'Warranty as per manufacturer'
-                ]),
-                'winner_id' => null,
-                'won_at' => null,
-                'created_at' => now(),
-                'updated_at' => now(),
+                'end_time' => now()->addDays(5),
+                'vendor_id' => $vendors->first()->id,
+                'category_id' => $categories->where('slug', 'electronics')->first()->id ?? $categories->first()->id,
             ],
             [
-                'tenant_id' => 1,
-                'vendor_id' => 2, // Fashion Forward
-                'product_id' => 3, // Designer Evening Dress
-                'title' => 'Designer Evening Dress - Vintage Collection',
-                'description' => 'Exclusive vintage designer evening dress from our premium collection. Perfect for special occasions.',
-                'type' => 'reserve',
-                'starting_price' => 200.00,
-                'reserve_price' => 350.00,
-                'buy_now_price' => null,
-                'current_bid' => 250.00,
-                'bid_increment' => 10.00,
-                'bid_count' => 5,
+                'title' => 'Antique Persian Rug 1920s',
+                'description' => 'Beautiful handwoven Persian rug from the 1920s. 8x10 feet, wool and silk blend. Excellent condition with minor wear consistent with age.',
+                'starting_price' => 5000.00,
+                'current_price' => 7200.00,
+                'reserve_price' => 8000.00,
+                'increment' => 100.00,
+                'status' => 'active',
+                'start_time' => now()->subDays(1),
+                'end_time' => now()->addDays(4),
+                'vendor_id' => $vendors->count() > 1 ? $vendors[1]->id : $vendors->first()->id,
+                'category_id' => $categories->where('slug', 'home-garden')->first()->id ?? $categories->first()->id,
+            ],
+            [
+                'title' => 'Signed Picasso Lithograph',
+                'description' => 'Original signed lithograph by Pablo Picasso from 1960s. Certificate of authenticity included. Excellent condition.',
+                'starting_price' => 8000.00,
+                'current_price' => 9500.00,
+                'reserve_price' => 12000.00,
+                'increment' => 200.00,
+                'status' => 'active',
+                'start_time' => now(),
+                'end_time' => now()->addDays(7),
+                'vendor_id' => $vendors->first()->id,
+                'category_id' => $categories->where('slug', 'home-garden')->first()->id ?? $categories->first()->id,
+            ],
+            [
+                'title' => 'Vintage Gibson Les Paul 1959',
+                'description' => 'Rare 1959 Gibson Les Paul Standard in sunburst finish. All original hardware and electronics. Comes with original case.',
+                'starting_price' => 25000.00,
+                'current_price' => 32000.00,
+                'reserve_price' => 40000.00,
+                'increment' => 500.00,
+                'status' => 'active',
+                'start_time' => now()->subDays(3),
+                'end_time' => now()->addDays(6),
+                'vendor_id' => $vendors->count() > 1 ? $vendors[1]->id : $vendors->first()->id,
+                'category_id' => $categories->where('slug', 'electronics')->first()->id ?? $categories->first()->id,
+            ],
+            [
+                'title' => 'Diamond Engagement Ring 3ct',
+                'description' => 'Beautiful 3-carat diamond engagement ring with platinum setting. GIA certified diamond with excellent cut, color, and clarity.',
+                'starting_price' => 15000.00,
+                'current_price' => 18000.00,
+                'reserve_price' => 22000.00,
+                'increment' => 300.00,
+                'status' => 'active',
                 'start_time' => now()->subHours(12),
-                'end_time' => now()->addHours(12),
-                'status' => 'active',
-                'is_featured' => false,
-                'auto_extend' => false,
-                'extend_minutes' => 0,
-                'images' => json_encode([
-                    'https://via.placeholder.com/800x600/e74c3c/ffffff?text=Designer+Dress+Auction',
-                    'https://via.placeholder.com/800x600/f39c12/ffffff?text=Designer+Dress+Detail'
-                ]),
-                'terms_conditions' => json_encode([
-                    'Payment within 24 hours',
-                    'Free shipping on orders over $200',
-                    'Size exchange available',
-                    'Dry clean only'
-                ]),
-                'winner_id' => null,
-                'won_at' => null,
-                'created_at' => now(),
-                'updated_at' => now(),
+                'end_time' => now()->addDays(3),
+                'vendor_id' => $vendors->first()->id,
+                'category_id' => $categories->where('slug', 'fashion')->first()->id ?? $categories->first()->id,
             ],
             [
-                'tenant_id' => 1,
-                'vendor_id' => 1, // TechGear Solutions
-                'product_id' => 2, // MacBook Pro 16-inch
-                'title' => 'MacBook Pro 16-inch M3 Max - Open Box',
-                'description' => 'Open box MacBook Pro 16-inch with M3 Max chip. Never used, only opened for inspection.',
-                'type' => 'buy_now',
+                'title' => 'Vintage Wine Collection 1961',
+                'description' => 'Collection of 12 bottles of vintage wine from 1961, including Bordeaux and Burgundy. Properly stored in temperature-controlled cellar.',
                 'starting_price' => 3000.00,
-                'reserve_price' => null,
-                'buy_now_price' => 3200.00,
-                'current_bid' => 3000.00,
-                'bid_increment' => 50.00,
-                'bid_count' => 3,
+                'current_price' => 4200.00,
+                'reserve_price' => 5000.00,
+                'increment' => 100.00,
+                'status' => 'active',
                 'start_time' => now()->subDays(1),
                 'end_time' => now()->addDays(2),
-                'status' => 'active',
-                'is_featured' => true,
-                'auto_extend' => true,
-                'extend_minutes' => 10,
-                'images' => json_encode([
-                    'https://via.placeholder.com/800x600/2c3e50/ffffff?text=MacBook+Pro+Auction',
-                    'https://via.placeholder.com/800x600/3498db/ffffff?text=MacBook+Pro+Box'
-                ]),
-                'terms_conditions' => json_encode([
-                    'Payment within 72 hours',
-                    'Express shipping available',
-                    'Full manufacturer warranty',
-                    'Technical support included'
-                ]),
-                'winner_id' => null,
-                'won_at' => null,
-                'created_at' => now(),
-                'updated_at' => now(),
+                'vendor_id' => $vendors->count() > 1 ? $vendors[1]->id : $vendors->first()->id,
+                'category_id' => $categories->where('slug', 'home-garden')->first()->id ?? $categories->first()->id,
             ],
             [
-                'tenant_id' => 1,
-                'vendor_id' => 2, // Fashion Forward
-                'product_id' => 4, // Professional Tennis Racket
-                'title' => 'Professional Tennis Racket - Signed by Pro Player',
-                'description' => 'Professional tennis racket signed by a top-ranked player. Includes certificate of authenticity.',
-                'type' => 'english',
-                'starting_price' => 150.00,
-                'reserve_price' => 200.00,
-                'buy_now_price' => 300.00,
-                'current_bid' => 175.00,
-                'bid_increment' => 5.00,
-                'bid_count' => 12,
+                'title' => 'Classic Car 1967 Mustang',
+                'description' => 'Restored 1967 Ford Mustang Fastback in original red color. Matching numbers engine and transmission. Recent restoration with new paint and interior.',
+                'starting_price' => 35000.00,
+                'current_price' => 42000.00,
+                'reserve_price' => 50000.00,
+                'increment' => 1000.00,
+                'status' => 'active',
+                'start_time' => now()->subDays(4),
+                'end_time' => now()->addDays(8),
+                'vendor_id' => $vendors->first()->id,
+                'category_id' => $categories->where('slug', 'electronics')->first()->id ?? $categories->first()->id,
+            ],
+            [
+                'title' => 'Sports Memorabilia Collection',
+                'description' => 'Extensive collection of sports memorabilia including signed jerseys, baseball cards, and championship rings. Over 100 items total.',
+                'starting_price' => 2000.00,
+                'current_price' => 2800.00,
+                'reserve_price' => 3500.00,
+                'increment' => 50.00,
+                'status' => 'active',
                 'start_time' => now()->subHours(6),
-                'end_time' => now()->addHours(18),
-                'status' => 'active',
-                'is_featured' => false,
-                'auto_extend' => true,
-                'extend_minutes' => 3,
-                'images' => json_encode([
-                    'https://via.placeholder.com/800x600/27ae60/ffffff?text=Tennis+Racket+Auction',
-                    'https://via.placeholder.com/800x600/2ecc71/ffffff?text=Tennis+Racket+Signature'
-                ]),
-                'terms_conditions' => json_encode([
-                    'Payment within 48 hours',
-                    'Certificate of authenticity included',
-                    'No returns on signed items',
-                    'Standard shipping included'
-                ]),
-                'winner_id' => null,
-                'won_at' => null,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'tenant_id' => 1,
-                'vendor_id' => 2, // Fashion Forward
-                'product_id' => 3, // Designer Evening Dress
-                'title' => 'Designer Handbag - Limited Edition',
-                'description' => 'Exclusive limited edition designer handbag from a luxury brand. Only 100 pieces made worldwide.',
-                'type' => 'private',
-                'starting_price' => 500.00,
-                'reserve_price' => 800.00,
-                'buy_now_price' => null,
-                'current_bid' => 600.00,
-                'bid_increment' => 25.00,
-                'bid_count' => 4,
-                'start_time' => now()->subDays(3),
                 'end_time' => now()->addDays(1),
-                'status' => 'active',
-                'is_featured' => true,
-                'auto_extend' => false,
-                'extend_minutes' => 0,
-                'images' => json_encode([
-                    'https://via.placeholder.com/800x600/e74c3c/ffffff?text=Designer+Handbag+Auction',
-                    'https://via.placeholder.com/800x600/f39c12/ffffff?text=Designer+Handbag+Detail'
-                ]),
-                'terms_conditions' => json_encode([
-                    'Private auction - invitation only',
-                    'Payment within 24 hours',
-                    'Certificate of authenticity',
-                    'Insurance included in shipping'
-                ]),
-                'winner_id' => null,
-                'won_at' => null,
-                'created_at' => now(),
-                'updated_at' => now(),
+                'vendor_id' => $vendors->count() > 1 ? $vendors[1]->id : $vendors->first()->id,
+                'category_id' => $categories->where('slug', 'sports-outdoors')->first()->id ?? $categories->first()->id,
             ],
-            // Ended Auction
-            [
-                'tenant_id' => 1,
-                'vendor_id' => 1, // TechGear Solutions
-                'product_id' => 1, // iPhone 15 Pro Max
-                'title' => 'iPhone 14 Pro Max 128GB - Ended Auction',
-                'description' => 'Previous generation iPhone 14 Pro Max in excellent condition.',
-                'type' => 'english',
-                'starting_price' => 800.00,
-                'reserve_price' => 900.00,
-                'buy_now_price' => null,
-                'current_bid' => 950.00,
-                'bid_increment' => 20.00,
-                'bid_count' => 15,
-                'start_time' => now()->subDays(5),
-                'end_time' => now()->subDays(1),
-                'status' => 'ended',
-                'is_featured' => false,
-                'auto_extend' => true,
-                'extend_minutes' => 5,
-                'images' => json_encode([
-                    'https://via.placeholder.com/800x600/2c3e50/ffffff?text=iPhone+14+Pro+Max',
-                    'https://via.placeholder.com/800x600/3498db/ffffff?text=iPhone+14+Pro+Max+Box'
-                ]),
-                'terms_conditions' => json_encode([
-                    'Payment within 48 hours',
-                    'Shipping included',
-                    'No returns',
-                    'Warranty as per manufacturer'
-                ]),
-                'winner_id' => 2, // John Smith
-                'won_at' => now()->subDays(1),
-                'created_at' => now()->subDays(5),
-                'updated_at' => now()->subDays(1),
-            ]
         ];
 
-        DB::table('auctions')->insert($auctions);
+        foreach ($auctions as $auctionData) {
+            DB::table('auctions')->insert([
+                'tenant_id' => $tenant->id,
+                'vendor_id' => $auctionData['vendor_id'],
+                'product_id' => $products->random()->id, // Assign random product
+                'title' => $auctionData['title'],
+                'description' => $auctionData['description'],
+                'type' => 'live',
+                'starting_price' => $auctionData['starting_price'],
+                'reserve_price' => $auctionData['reserve_price'],
+                'buy_now_price' => $auctionData['current_price'] * 1.2, // Buy now price is 20% higher
+                'current_bid' => $auctionData['current_price'],
+                'bid_increment' => $auctionData['increment'],
+                'bid_count' => rand(5, 25),
+                'start_time' => $auctionData['start_time'],
+                'end_time' => $auctionData['end_time'],
+                'status' => $auctionData['status'],
+                'is_featured' => rand(0, 1),
+                'auto_extend' => true,
+                'extend_minutes' => 5,
+                'images' => json_encode(['/images/auctions/auction-placeholder.jpg']),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            $this->command->info("Created auction: {$auctionData['title']}");
+        }
+
+        $this->command->info('Auction seeding completed!');
     }
 }
