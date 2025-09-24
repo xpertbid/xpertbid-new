@@ -25,50 +25,52 @@ class AuthController extends Controller
      */
     public function register(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
-            'phone' => 'nullable|string|max:20',
-            'tenant_id' => 'nullable|exists:tenants,id',
-            'user_type' => 'nullable|in:admin,vendor,customer,estate_agent,sales_agent',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed',
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
         try {
+            $validator = Validator::make($request->all(), [
+                'name' => 'required|string|max:255',
+                'email' => 'required|string|email|max:255|unique:users',
+                'password' => 'required|string|min:6',
+                'phone' => 'nullable|string|max:20',
+                'tenant_id' => 'nullable|exists:tenants,id',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation failed',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
             $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
                 'phone' => $request->phone,
                 'tenant_id' => $request->tenant_id ?? 1, // Default tenant
-                'user_type' => $request->user_type ?? 'customer',
                 'status' => 'active',
                 'email_verified_at' => now(),
             ]);
 
-            $token = $user->createToken('auth_token')->plainTextToken;
-
-            // Send welcome email
-            $this->notificationService->sendWelcomeEmail($user, $request->password);
+            // For demo purposes, create a simple token
+            $token = base64_encode($user->email . ':' . time());
 
             return response()->json([
                 'success' => true,
                 'message' => 'User registered successfully',
                 'data' => [
-                    'user' => $user,
+                    'user' => [
+                        'id' => $user->id,
+                        'name' => $user->name,
+                        'email' => $user->email,
+                        'tenant_id' => $user->tenant_id,
+                    ],
                     'token' => $token,
                     'token_type' => 'Bearer'
                 ]
             ], 201);
         } catch (\Exception $e) {
+            \Log::error('Register error: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Error creating user: ' . $e->getMessage()
@@ -81,20 +83,20 @@ class AuthController extends Controller
      */
     public function login(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'email' => 'required|email',
-            'password' => 'required|string|min:6',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed',
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
         try {
+            $validator = Validator::make($request->all(), [
+                'email' => 'required|email',
+                'password' => 'required|string|min:6',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation failed',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
             if (!Auth::attempt($request->only('email', 'password'))) {
                 return response()->json([
                     'success' => false,
@@ -111,18 +113,25 @@ class AuthController extends Controller
                 ], 403);
             }
 
-            $token = $user->createToken('auth_token')->plainTextToken;
+            // For demo purposes, create a simple token
+            $token = base64_encode($user->email . ':' . time());
 
             return response()->json([
                 'success' => true,
                 'message' => 'Login successful',
                 'data' => [
-                    'user' => $user,
+                    'user' => [
+                        'id' => $user->id,
+                        'name' => $user->name,
+                        'email' => $user->email,
+                        'tenant_id' => $user->tenant_id,
+                    ],
                     'token' => $token,
                     'token_type' => 'Bearer'
                 ]
             ]);
         } catch (\Exception $e) {
+            \Log::error('Login error: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Error during login: ' . $e->getMessage()

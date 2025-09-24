@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('shipping_methods', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('tenant_id');
-            $table->unsignedBigInteger('shipping_zone_id');
+            $table->foreignId('shipping_zone_id')->constrained()->onDelete('cascade');
             $table->string('name');
             $table->string('method_type'); // flat_rate, free_shipping, local_pickup, carrier_based, product_based, vendor_based
             $table->text('description')->nullable();
@@ -25,8 +25,6 @@ return new class extends Migration
             $table->integer('sort_order')->default(0);
             $table->timestamps();
 
-            $table->foreign('tenant_id')->references('id')->on('tenants')->onDelete('cascade');
-            $table->foreign('shipping_zone_id')->references('id')->on('shipping_zones')->onDelete('cascade');
             $table->index(['tenant_id', 'shipping_zone_id', 'is_active']);
         });
     }

@@ -145,10 +145,7 @@ Route::get('/admin/vendors', function () {
     return view('admin.vendors', compact('vendors'));
 });
 
-// Products Routes - Main Dashboard
-Route::get('/admin/products', function () {
-    return view('admin.products-dashboard');
-});
+// Products Routes - Main Dashboard (removed duplicate)
 
 // Simple/Variation Products Routes
 Route::get('/admin/products/simple/create', function () {
@@ -715,8 +712,7 @@ Route::get('/admin/components/translation-manager/{model}/{id}', function ($mode
 // Pages Routes
 Route::resource('admin/pages', App\Http\Controllers\Admin\PageController::class);
 
-// Blog Routes
-Route::resource('admin/blogs', App\Http\Controllers\Admin\BlogController::class);
+// Blog Routes (moved to actual data display above)
 
 // Blog Categories Routes
 Route::resource('admin/blog-categories', App\Http\Controllers\Admin\BlogCategoryController::class);
@@ -742,6 +738,98 @@ Route::put('/admin/affiliates/{id}', [App\Http\Controllers\Admin\AffiliateContro
 Route::delete('/admin/affiliates/{id}', [App\Http\Controllers\Admin\AffiliateController::class, 'destroy'])->name('admin.affiliates.destroy');
 Route::get('/admin/affiliates/programs', [App\Http\Controllers\Admin\AffiliateController::class, 'programs'])->name('admin.affiliates.programs');
 Route::get('/admin/affiliates/commissions', [App\Http\Controllers\Admin\AffiliateController::class, 'commissions'])->name('admin.affiliates.commissions');
+
+// Order Management Routes
+Route::get('/admin/orders', function () {
+    $orders = DB::table('orders')
+        ->leftJoin('users', 'orders.user_id', '=', 'users.id')
+        ->leftJoin('vendors', 'orders.vendor_id', '=', 'vendors.id')
+        ->select('orders.*', 'users.name as customer_name', 'users.email as customer_email', 'vendors.business_name as vendor_name')
+        ->orderBy('orders.created_at', 'desc')
+        ->paginate(20);
+    return view('admin.orders.index', compact('orders'));
+})->name('admin.orders.index');
+
+Route::get('/admin/orders/{id}', function ($id) {
+    $order = DB::table('orders')
+        ->leftJoin('users', 'orders.user_id', '=', 'users.id')
+        ->leftJoin('vendors', 'orders.vendor_id', '=', 'vendors.id')
+        ->select('orders.*', 'users.name as customer_name', 'users.email as customer_email', 'vendors.business_name as vendor_name')
+        ->where('orders.id', $id)
+        ->first();
+    
+    if (!$order) {
+        abort(404, 'Order not found');
+    }
+    
+    $orderItems = DB::table('order_items')
+        ->leftJoin('products', 'order_items.product_id', '=', 'products.id')
+        ->leftJoin('vendors', 'order_items.vendor_id', '=', 'vendors.id')
+        ->select('order_items.*', 'products.name as product_name', 'products.sku as product_sku', 'vendors.business_name as vendor_name')
+        ->where('order_items.order_id', $id)
+        ->get();
+    
+    $payments = DB::table('payments')
+        ->where('order_id', $id)
+        ->get();
+    
+    return view('admin.orders.show', compact('order', 'orderItems', 'payments'));
+})->name('admin.orders.show');
+
+Route::put('/admin/orders/{id}/status', function (\Illuminate\Http\Request $request, $id) {
+    $request->validate([
+        'status' => 'required|string|in:pending,confirmed,processing,shipped,delivered,cancelled,refunded',
+        'notes' => 'nullable|string'
+    ]);
+    
+    $order = DB::table('orders')->where('id', $id)->first();
+    if (!$order) {
+        abort(404, 'Order not found');
+    }
+    
+    $updateData = ['status' => $request->status];
+    
+    // Update timestamps based on status
+    if ($request->status === 'confirmed' && !$order->confirmed_at) {
+        $updateData['confirmed_at'] = now();
+    } elseif ($request->status === 'shipped' && !$order->shipped_at) {
+        $updateData['shipped_at'] = now();
+        $updateData['tracking_number'] = 'TRK-' . strtoupper(Str::random(10));
+    } elseif ($request->status === 'delivered' && !$order->delivered_at) {
+        $updateData['delivered_at'] = now();
+    }
+    
+    if ($request->notes) {
+        $updateData['notes'] = $request->notes;
+    }
+    
+    DB::table('orders')->where('id', $id)->update($updateData);
+    
+    return redirect()->back()->with('success', 'Order status updated successfully!');
+})->name('admin.orders.update-status');
+
+// Products Routes - Show actual products data
+Route::get('/admin/products', function () {
+    $products = DB::table('products')
+        ->leftJoin('categories', 'products.category_id', '=', 'categories.id')
+        ->leftJoin('vendors', 'products.vendor_id', '=', 'vendors.id')
+        ->select('products.*', 'categories.name as category_name', 'vendors.business_name as vendor_name')
+        ->orderBy('products.created_at', 'desc')
+        ->paginate(20);
+    return view('admin.products.index', compact('products'));
+})->name('admin.products.index');
+
+// Blog Routes - Show actual blog data
+Route::get('/admin/blogs', function () {
+    $blogs = DB::table('pages')
+        ->leftJoin('blog_categories', 'pages.blog_category_id', '=', 'blog_categories.id')
+        ->leftJoin('users', 'pages.author_id', '=', 'users.id')
+        ->select('pages.*', 'blog_categories.name as category_name', 'users.name as author_name')
+        ->where('pages.page_type', 'blog')
+        ->orderBy('pages.created_at', 'desc')
+        ->paginate(20);
+    return view('admin.blogs.index', compact('blogs'));
+})->name('admin.blogs.index');
 
 // Cache Management Routes
 Route::get('/admin/cache', [App\Http\Controllers\Admin\CacheController::class, 'index'])->name('admin.cache.index');

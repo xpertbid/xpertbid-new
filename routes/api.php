@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 // Health check endpoint
 Route::get('/health', function () {
@@ -122,6 +123,290 @@ Route::get('/kyc-types', function () {
         ], 500);
     }
 });
+
+// Additional public API routes for frontend
+Route::get('/brands', function () {
+    try {
+        $brands = DB::table('brands')
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get();
+        
+        return response()->json([
+            'success' => true,
+            'data' => $brands
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Error fetching brands: ' . $e->getMessage()
+        ], 500);
+    }
+});
+
+Route::get('/auctions', function () {
+    try {
+        // Get auctions with better error handling
+        $auctions = DB::table('auctions')
+            ->leftJoin('products', 'auctions.product_id', '=', 'products.id')
+            ->leftJoin('vendors', 'auctions.vendor_id', '=', 'vendors.id')
+            ->select(
+                'auctions.*', 
+                'products.name as product_name', 
+                'products.images as product_image',
+                'products.slug as product_slug',
+                'vendors.business_name as seller_name'
+            )
+            ->where('auctions.status', 'active')
+            ->orderBy('auctions.end_time', 'asc')
+            ->get();
+        
+        // Transform the data to ensure all required fields are present
+        $transformedAuctions = $auctions->map(function ($auction) {
+            return [
+                'id' => $auction->id,
+                'slug' => $auction->product_slug ?? 'auction-' . $auction->id,
+                'product_name' => $auction->product_name ?? 'Auction Item',
+                'product_image' => $auction->product_image ?? 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=300&fit=crop',
+                'seller_name' => $auction->seller_name ?? 'Unknown Seller',
+                'current_bid' => $auction->current_bid ?? 0,
+                'reserve_price' => $auction->reserve_price,
+                'end_time' => $auction->end_time,
+                'bid_count' => $auction->bid_count ?? 0,
+                'status' => $auction->status,
+                'created_at' => $auction->created_at,
+                'updated_at' => $auction->updated_at
+            ];
+        });
+        
+        return response()->json([
+            'success' => true,
+            'data' => $transformedAuctions
+        ]);
+    } catch (\Exception $e) {
+        \Log::error('Auctions API Error: ' . $e->getMessage());
+        return response()->json([
+            'success' => false,
+            'message' => 'Error fetching auctions: ' . $e->getMessage()
+        ], 500);
+    }
+});
+
+Route::get('/properties', function () {
+    try {
+        $properties = DB::table('properties')
+            ->leftJoin('users', 'properties.user_id', '=', 'users.id')
+            ->select('properties.*', 'users.name as seller_name')
+            ->where('properties.status', 'active')
+            ->orderBy('properties.created_at', 'desc')
+            ->get();
+        
+        return response()->json([
+            'success' => true,
+            'data' => $properties
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Error fetching properties: ' . $e->getMessage()
+        ], 500);
+    }
+});
+
+Route::get('/vehicles', function () {
+    try {
+        $vehicles = DB::table('vehicles')
+            ->leftJoin('users', 'vehicles.user_id', '=', 'users.id')
+            ->select('vehicles.*', 'users.name as seller_name')
+            ->where('vehicles.status', 'active')
+            ->orderBy('vehicles.created_at', 'desc')
+            ->get();
+        
+        return response()->json([
+            'success' => true,
+            'data' => $vehicles
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Error fetching vehicles: ' . $e->getMessage()
+        ], 500);
+    }
+});
+
+Route::get('/blog-posts', function () {
+    try {
+        $blogPosts = DB::table('pages')
+            ->leftJoin('blog_categories', 'pages.blog_category_id', '=', 'blog_categories.id')
+            ->leftJoin('users', 'pages.author_id', '=', 'users.id')
+            ->select('pages.*', 'blog_categories.name as category_name', 'users.name as author_name')
+            ->where('pages.page_type', 'blog')
+            ->where('pages.status', 'published')
+            ->orderBy('pages.published_at', 'desc')
+            ->get();
+        
+        return response()->json([
+            'success' => true,
+            'data' => $blogPosts
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Error fetching blog posts: ' . $e->getMessage()
+        ], 500);
+    }
+});
+
+// Bid placement endpoint
+Route::post('/auctions/{auctionId}/bids', function (\Illuminate\Http\Request $request, $auctionId) {
+    try {
+        $request->validate([
+            'bid_amount' => 'required|numeric|min:1',
+            'bidder_name' => 'required|string|max:255',
+            'bidder_email' => 'required|email|max:255'
+        ]);
+
+        // Get auction details
+        $auction = DB::table('auctions')->where('id', $auctionId)->first();
+        
+        if (!$auction) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Auction not found'
+            ], 404);
+        }
+
+        if ($auction->status !== 'active') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Auction is not active'
+            ], 400);
+        }
+
+        // Check if bid is higher than current bid
+        if ($request->bid_amount <= $auction->current_bid) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Bid amount must be higher than current bid'
+            ], 400);
+        }
+
+        // Create bid record
+        $bidId = DB::table('bids')->insertGetId([
+            'auction_id' => $auctionId,
+            'bidder_name' => $request->bidder_name,
+            'bidder_email' => $request->bidder_email,
+            'bid_amount' => $request->bid_amount,
+            'bid_time' => now(),
+            'status' => 'active',
+            'created_at' => now(),
+            'updated_at' => now()
+        ]);
+
+        // Update auction with new current bid
+        DB::table('auctions')->where('id', $auctionId)->update([
+            'current_bid' => $request->bid_amount,
+            'bid_count' => DB::raw('bid_count + 1'),
+            'updated_at' => now()
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Bid placed successfully',
+            'data' => [
+                'bid_id' => $bidId,
+                'bid_amount' => $request->bid_amount,
+                'bidder_name' => $request->bidder_name,
+                'bid_time' => now()->toISOString()
+            ]
+        ]);
+
+    } catch (\Illuminate\Validation\ValidationException $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Validation failed',
+            'errors' => $e->errors()
+        ], 422);
+    } catch (\Exception $e) {
+        \Log::error('Bid placement error: ' . $e->getMessage());
+        return response()->json([
+            'success' => false,
+            'message' => 'Error placing bid: ' . $e->getMessage()
+        ], 500);
+    }
+});
+
+// Get user's bidding history
+Route::get('/user/{email}/bids', function ($email) {
+    try {
+        $bids = DB::table('bids')
+            ->leftJoin('auctions', 'bids.auction_id', '=', 'auctions.id')
+            ->leftJoin('products', 'auctions.product_id', '=', 'products.id')
+            ->select(
+                'bids.*',
+                'auctions.end_time',
+                'auctions.status as auction_status',
+                'products.name as product_name',
+                'products.featured_image as product_image'
+            )
+            ->where('bids.bidder_email', $email)
+            ->orderBy('bids.bid_time', 'desc')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $bids
+        ]);
+    } catch (\Exception $e) {
+        \Log::error('Get user bids error: ' . $e->getMessage());
+        return response()->json([
+            'success' => false,
+            'message' => 'Error fetching bids: ' . $e->getMessage()
+        ], 500);
+    }
+});
+
+// Get available payment gateways
+Route::get('/payment-gateways', function () {
+    try {
+        $gateways = DB::table('payment_gateways')
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->get();
+
+        // Transform the data to include only necessary fields
+        $transformedGateways = $gateways->map(function ($gateway) {
+            return [
+                'id' => $gateway->id,
+                'name' => $gateway->name,
+                'code' => $gateway->code,
+                'type' => $gateway->type,
+                'description' => $gateway->description,
+                'logo_url' => $gateway->logo_url,
+                'transaction_fee' => $gateway->transaction_fee,
+                'fixed_fee' => $gateway->fixed_fee,
+                'supported_currencies' => json_decode($gateway->supported_currencies, true),
+                'supported_countries' => json_decode($gateway->supported_countries, true),
+                'is_test_mode' => $gateway->is_test_mode,
+                'sort_order' => $gateway->sort_order
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'data' => $transformedGateways
+        ]);
+    } catch (\Exception $e) {
+        \Log::error('Payment gateways API error: ' . $e->getMessage());
+        return response()->json([
+            'success' => false,
+            'message' => 'Error fetching payment gateways: ' . $e->getMessage()
+        ], 500);
+    }
+});
+
+// Authentication routes are handled by AuthController
+
 use App\Http\Controllers\Api\TenantController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\VendorController;

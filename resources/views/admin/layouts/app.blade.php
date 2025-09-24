@@ -577,6 +577,12 @@
                 <span class="sidebar-text">Auction</span>
             </a>
             
+            <!-- Orders -->
+            <a class="nav-link {{ request()->is('admin/orders*') ? 'active' : '' }}" href="/admin/orders">
+                <i class="fas fa-shopping-cart"></i>
+                <span class="sidebar-text">Orders</span>
+            </a>
+            
             <!-- Tenants -->
             <a class="nav-link {{ request()->is('admin/tenants*') ? 'active' : '' }}" href="/admin/tenants">
                 <i class="fas fa-building"></i>
