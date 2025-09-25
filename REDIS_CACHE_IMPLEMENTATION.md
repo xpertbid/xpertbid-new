@@ -1,7 +1,7 @@
 # 🚀 Redis Cache Implementation Guide
 
 ## Overview
-I've implemented a comprehensive Redis caching system for your XpertBid admin panel, covering Products, Auctions, Properties, and Vehicles modules. This implementation significantly improves performance and reduces database load.
+I've implemented a comprehensive Redis caching system for your XpertBid admin panel, covering Products, Auctions, Properties, and Vehicles modules. This implementation significantly improves performance and reduces database loada.
 
 ---
 
